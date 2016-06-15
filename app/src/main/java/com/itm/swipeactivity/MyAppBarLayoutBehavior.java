@@ -6,11 +6,15 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
+import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
@@ -18,7 +22,8 @@ import android.view.animation.LinearInterpolator;
 /**
  * Created by Alexey Sidorenko on 15-Jun-16.
  */
-public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior {
+public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior implements
+        GestureDetector.OnGestureListener {
     private View mTargetView;
 
     private static final String TAG = MyAppBarLayoutBehavior.class.getSimpleName();
@@ -29,6 +34,7 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior {
     private Context mContext;
     private int mWidth;
     private int mHeight;
+    private GestureDetectorCompat mDetector;
 
     public MyAppBarLayoutBehavior() {
         init();
@@ -54,6 +60,8 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior {
         mWidth = size.x;
         mHeight = size.y;
 
+        mDetector = new GestureDetectorCompat(mContext, this);
+
     }
 
     @Override
@@ -64,6 +72,7 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior {
     @Override
     public boolean onStartNestedScroll(CoordinatorLayout parent, AppBarLayout child, View directTargetChild, View target, int nestedScrollAxes) {
         mStartY = 0;
+        Log.v(TAG, "onStartNestedScroll");
         return super.onStartNestedScroll(parent, child, directTargetChild, target, nestedScrollAxes);
     }
 
@@ -93,7 +102,7 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior {
     }
 
     private void startExitAnimation() {
-        final ValueAnimator animator = ValueAnimator.ofInt(50, mHeight / 2);
+        final ValueAnimator animator = ValueAnimator.ofInt(mNewHeight, mHeight / 2);
         animator.setInterpolator(new LinearInterpolator());
         animator.setDuration(300);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -141,4 +150,79 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior {
         child.addOnOffsetChangedListener(mOffsetChangedListener);
         return super.layoutDependsOn(parent, child, dependency);
     }
+
+    @Override
+    public boolean onDependentViewChanged(CoordinatorLayout parent, AppBarLayout child, View dependency) {
+        Log.v(TAG, "onDependentViewChanged");
+        return super.onDependentViewChanged(parent, child, dependency);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(CoordinatorLayout parent, AppBarLayout child, MotionEvent ev) {
+//        Log.v(TAG, "onInterceptTouchEvent " + ev);
+        return super.onInterceptTouchEvent(parent, child, ev);
+    }
+
+    @Override
+    public boolean onTouchEvent(CoordinatorLayout parent, AppBarLayout child, MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_UP){
+            if (mTargetView != null && mNewHeight > 0) {
+                ViewGroup.LayoutParams ll = mTargetView.getLayoutParams();
+                ll.height = 0;
+                mNewHeight = 0;
+                mTargetView.setLayoutParams(ll);
+            }
+        } else {
+            this.mDetector.onTouchEvent(ev);
+        }
+//        Log.v(TAG, "onTouchEvent " + ev);
+        return super.onTouchEvent(parent, child, ev);
+    }
+
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        Log.v(TAG, "scroll " + distanceY);
+
+        if (distanceY < 0 && mTargetView != null && mCurrentOffset == 0) {
+            ViewGroup.LayoutParams ll = mTargetView.getLayoutParams();
+            mNewHeight = ll.height - (int) distanceY;
+            if (mNewHeight > 0 && mNewHeight <= 50) {
+                Log.v(TAG, "newHeight " + mNewHeight);
+                ll.height = mNewHeight;
+                mTargetView.setLayoutParams(ll);
+            } else if (mNewHeight > 50 && mContext instanceof Activity) {
+                startExitAnimation();
+            }
+        }
+
+
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        return false;
+    }
 }
+

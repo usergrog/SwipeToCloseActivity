@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
