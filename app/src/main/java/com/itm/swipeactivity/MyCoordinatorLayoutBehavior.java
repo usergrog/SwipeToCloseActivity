@@ -16,6 +16,7 @@ import android.widget.TextView;
 public class MyCoordinatorLayoutBehavior extends CoordinatorLayout.Behavior {
     private static final String TAG = MyCoordinatorLayoutBehavior.class.getSimpleName();
 
+
     public MyCoordinatorLayoutBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.v(TAG, "MyCoordinatorLayoutBehavior");
