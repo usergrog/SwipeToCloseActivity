@@ -17,7 +17,13 @@ import android.view.ViewGroup;
  */
 public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
         GestureDetector.OnGestureListener {
+    public interface SwipeActionCallback{
+        void onUp();
+        void onDown();
+    }
+
     private static final String TAG = SwipeToCloseBehavior.class.getSimpleName();
+    private SwipeActionCallback mSwipeActionCallback;
     private View mTopView;
     private View mBottomView;
     private int mNewHeight;
@@ -77,7 +83,11 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
                 ll.height = mNewHeight;
                 mBottomView.setLayoutParams(ll);
             } else if (mNewHeight > mCloseMargin && mContext instanceof Activity) {
-                slideOut(true);
+                if (mSwipeActionCallback != null){
+                    mSwipeActionCallback.onUp();
+                } else {
+                    slideOut(true);
+                }
             }
             return true;
         }
@@ -92,7 +102,11 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
                 ll.height = mNewHeight;
                 mTopView.setLayoutParams(ll);
             } else if (mNewHeight > mCloseMargin && mContext instanceof Activity) {
-                slideOut(false);
+                if (mSwipeActionCallback != null){
+                    mSwipeActionCallback.onDown();
+                } else {
+                    slideOut(false);
+                }
             }
             return true;
         }
@@ -189,5 +203,8 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
         }
     }
 
+    public void setSwipeActionCallback(SwipeActionCallback swipeActionCallback) {
+        mSwipeActionCallback = swipeActionCallback;
+    }
 }
 
