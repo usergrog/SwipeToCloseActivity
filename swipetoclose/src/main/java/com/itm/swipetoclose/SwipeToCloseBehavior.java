@@ -1,15 +1,12 @@
-package com.itm.swipeactivity;
+package com.itm.swipetoclose;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Point;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,9 +15,9 @@ import android.view.ViewGroup;
 /**
  * Created by Alexey Sidorenko on 15-Jun-16.
  */
-public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior implements
+public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
         GestureDetector.OnGestureListener {
-    private static final String TAG = MyAppBarLayoutBehavior.class.getSimpleName();
+    private static final String TAG = SwipeToCloseBehavior.class.getSimpleName();
     private View mTopView;
     private View mBottomView;
     private int mNewHeight;
@@ -30,11 +27,11 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior implements
     private GestureDetectorCompat mDetector;
     private int mCloseMargin;
 
-    public MyAppBarLayoutBehavior() {
+    public SwipeToCloseBehavior() {
         init();
     }
 
-    public MyAppBarLayoutBehavior(Context context, AttributeSet attrs) {
+    public SwipeToCloseBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
         setupAttrs(context, attrs);
@@ -43,9 +40,9 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior implements
 
     private void setupAttrs(Context context, AttributeSet attrs) {
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
-                R.styleable.MyAppBarLayoutBehavior, 0, 0);
+                R.styleable.SwipeToCloseBehavior, 0, 0);
         try {
-            mCloseMargin = a.getDimensionPixelSize(R.styleable.MyAppBarLayoutBehavior_layout_close_margin, 0);
+            mCloseMargin = a.getDimensionPixelSize(R.styleable.SwipeToCloseBehavior_layout_close_margin, 0);
         } finally {
             a.recycle();
         }
@@ -77,7 +74,6 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior implements
             ViewGroup.LayoutParams ll = mBottomView.getLayoutParams();
             mNewHeight = ll.height + distanceY;
             if (mNewHeight > 0 && mNewHeight <= mCloseMargin) {
-                Log.v(TAG, "newHeight " + mNewHeight);
                 ll.height = mNewHeight;
                 mBottomView.setLayoutParams(ll);
             } else if (mNewHeight > mCloseMargin && mContext instanceof Activity) {
@@ -93,7 +89,6 @@ public class MyAppBarLayoutBehavior extends AppBarLayout.Behavior implements
             ViewGroup.LayoutParams ll = mTopView.getLayoutParams();
             mNewHeight = ll.height - distanceY;
             if (mNewHeight > 0 && mNewHeight <= mCloseMargin) {
-                Log.v(TAG, "newHeight " + mNewHeight);
                 ll.height = mNewHeight;
                 mTopView.setLayoutParams(ll);
             } else if (mNewHeight > mCloseMargin && mContext instanceof Activity) {
