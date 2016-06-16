@@ -17,12 +17,8 @@ import android.view.ViewGroup;
  */
 public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
         GestureDetector.OnGestureListener {
-    public interface SwipeActionCallback{
-        void onUp();
-        void onDown();
-    }
-
     private static final String TAG = SwipeToCloseBehavior.class.getSimpleName();
+    private boolean mAllowBottom;
     private SwipeActionCallback mSwipeActionCallback;
     private View mTopView;
     private View mBottomView;
@@ -49,6 +45,7 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
                 R.styleable.SwipeToCloseBehavior, 0, 0);
         try {
             mCloseMargin = a.getDimensionPixelSize(R.styleable.SwipeToCloseBehavior_layout_close_margin, 0);
+            mAllowBottom = a.getBoolean(R.styleable.SwipeToCloseBehavior_layout_allow_bottom, true);
         } finally {
             a.recycle();
         }
@@ -72,7 +69,9 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
     public void onNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
         checkScrollTopView(dyUnconsumed);
-        checkScrollBottomView(dyUnconsumed);
+        if (mAllowBottom) {
+            checkScrollBottomView(dyUnconsumed);
+        }
     }
 
     private boolean checkScrollBottomView(int distanceY) {
@@ -83,7 +82,7 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
                 ll.height = mNewHeight;
                 mBottomView.setLayoutParams(ll);
             } else if (mNewHeight > mCloseMargin && mContext instanceof Activity) {
-                if (mSwipeActionCallback != null){
+                if (mSwipeActionCallback != null) {
                     mSwipeActionCallback.onUp();
                 } else {
                     slideOut(true);
@@ -102,7 +101,7 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
                 ll.height = mNewHeight;
                 mTopView.setLayoutParams(ll);
             } else if (mNewHeight > mCloseMargin && mContext instanceof Activity) {
-                if (mSwipeActionCallback != null){
+                if (mSwipeActionCallback != null) {
                     mSwipeActionCallback.onDown();
                 } else {
                     slideOut(false);
@@ -160,7 +159,6 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
         }
     }
 
-
     @Override
     public boolean onDown(MotionEvent e) {
         return false;
@@ -205,6 +203,12 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
 
     public void setSwipeActionCallback(SwipeActionCallback swipeActionCallback) {
         mSwipeActionCallback = swipeActionCallback;
+    }
+
+    public interface SwipeActionCallback {
+        void onUp();
+
+        void onDown();
     }
 }
 

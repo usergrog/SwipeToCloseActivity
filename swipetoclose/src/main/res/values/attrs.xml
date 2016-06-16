@@ -2,5 +2,6 @@
 <resources>
     <declare-styleable name="SwipeToCloseBehavior">
         <attr name="layout_close_margin" format="dimension"/>
+        <attr name="layout_allow_bottom" format="boolean"/>
     </declare-styleable>
 </resources>
