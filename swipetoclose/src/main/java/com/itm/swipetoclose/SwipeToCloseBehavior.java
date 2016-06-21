@@ -1,5 +1,8 @@
 package com.itm.swipetoclose;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -7,10 +10,12 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
 
 /**
  * Created by Alexey Sidorenko on 15-Jun-16.
@@ -65,6 +70,24 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
         mDetector = new GestureDetectorCompat(mContext, this);
     }
 
+/*
+    @Override
+    public void onNestedPreScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target, int dx, int dy, int[] consumed) {
+        Log.d("DEBUGSWIPE", "dy " + dy + " offset " + mCurrentOffset);
+        if (mTopView != null && mCurrentOffset == 0) {
+            ViewGroup.LayoutParams ll = mTopView.getLayoutParams();
+            mNewHeight = ll.height - dy;
+            if (mNewHeight > 0) {
+                ll.height = mNewHeight;
+                mTopView.setLayoutParams(ll);
+            }
+            consumed[1] = dy;
+        } else {
+            super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed);
+        }
+    }
+*/
+
     @Override
     public void onNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
@@ -94,6 +117,7 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
     }
 
     private boolean checkScrollTopView(int distanceY) {
+//        Log.d("DEBUGSWIPE", "distanceY " + distanceY);
         if (distanceY < 0 && mTopView != null && mCurrentOffset == 0) {
             ViewGroup.LayoutParams ll = mTopView.getLayoutParams();
             mNewHeight = ll.height - distanceY;
@@ -120,12 +144,28 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
 
     private void hideBothViews() {
         if (mNewHeight > 0) {
-            ViewGroup.LayoutParams ll = mTopView.getLayoutParams();
-            ll.height = 0;
-            mTopView.setLayoutParams(ll);
-            ll = mBottomView.getLayoutParams();
-            ll.height = 0;
-            mBottomView.setLayoutParams(ll);
+            final ViewGroup.LayoutParams llTop = mTopView.getLayoutParams();
+            final ViewGroup.LayoutParams llBottom = mBottomView.getLayoutParams();
+
+            final ValueAnimator animator = ValueAnimator.ofInt(mNewHeight, 0);
+            animator.setInterpolator(new AccelerateInterpolator());
+            animator.setDuration(300);
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int val = (Integer) animation.getAnimatedValue();
+                    if (llTop.height > 0) {
+                        llTop.height = val;
+                        mTopView.setLayoutParams(llTop);
+                    }
+                    if (llBottom.height > 0) {
+                        llBottom.height = val;
+                        mBottomView.setLayoutParams(llBottom);
+                    }
+                }
+
+            });
+            animator.start();
             mNewHeight = 0;
         }
     }
@@ -176,6 +216,7 @@ public class SwipeToCloseBehavior extends AppBarLayout.Behavior implements
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+//        Log.d("DEBUGSWIPE", "distanceY on Scroll " + distanceY );
         return checkScrollTopView((int) distanceY);
     }
 
