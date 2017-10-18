@@ -5,6 +5,7 @@ tasks.whenTaskAdded { task ->
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 23
@@ -14,12 +15,31 @@ android {
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+//    android.libraryVariants.all { variant ->
+//        variant.outputs.each { output ->
+//            output.outputFile = new File(output.outputFile.parent,
+//                    "swipe_to_close-lib-" + defaultConfig.versionName + ".aar")
+//        }
+//    }
+
+    android.libraryVariants
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId 'no.innocode'
+                artifactId 'swipe-to-close'
+                artifact bundleRelease
+                version defaultConfig.versionName
+            }
         }
     }
 }
